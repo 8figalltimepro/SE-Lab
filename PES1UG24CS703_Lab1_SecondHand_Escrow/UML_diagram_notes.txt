@@ -1,0 +1,23 @@
+Use-Case Diagram description for manual recreation in draw.io/lucidchart:
+Actors:
+ - Buyer (left)
+ - Inspection Agent (left)
+ - Seller (right secondary)
+ - Payment Gateway (right external)
+System Boundary: Second-Hand Escrow Marketplace
+Use Cases inside:
+ UC-01 Place Order & Fund Escrow
+ UC-02 Process Payment via Gateway
+ UC-03 Submit Inspection Report
+ UC-04 Review Report & Sign-off
+ UC-05 Release Funds to Seller
+ UC-06 Raise Dispute (extend)
+Relations:
+ Buyer -- UC-01
+ Buyer -- UC-04
+ Buyer --(dotted)--> UC-06
+ Inspection Agent -- UC-03
+ Seller -- UC-05
+ Payment Gateway -- UC-02
+ UC-01 --<<include>>--> UC-02 (dashed arrow)
+ UC-06 --<<extend>>--> UC-04 (dashed arrow, optional)
