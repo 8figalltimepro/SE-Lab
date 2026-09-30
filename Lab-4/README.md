@@ -3,6 +3,7 @@
 **SRN:** PES1UG24CS703
 **Assigned repo:** https://github.com/SETAPESU26/39_endless-runner
 **Personal repo (this one):** https://github.com/8figalltimepro/39_endless-runner
+**Vibe coding tool / LLM:** opencode (omp agent) with `deepseek-v4.1-flash`, full session in `chat_history.pdf`
 
 ## Deliverables
 
