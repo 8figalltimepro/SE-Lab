@@ -1,0 +1,7 @@
+************* Module vehicle_service
+vehicle_service.py:73:0: C0116: Missing function or method docstring (missing-function-docstring)
+vehicle_service.py:78:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+------------------------------------------------------------------
+Your code has been rated at 9.68/10 (previous run: 4.66/10, +5.02)
+
