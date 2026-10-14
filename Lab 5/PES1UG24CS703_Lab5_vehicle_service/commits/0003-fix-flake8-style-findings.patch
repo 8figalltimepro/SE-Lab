@@ -1,0 +1,334 @@
+From d53106ec35582feb6439f59f39ea876a7563db05 Mon Sep 17 00:00:00 2001
+From: Samarth M <samarthmohan225@gmail.com>
+Date: Wed, 14 Oct 2026 08:41:14 +0530
+Subject: [PATCH 3/3] fix flake8 style findings
+
+---
+ .gitignore                        |  5 +++
+ issues.md                         | 33 ++++++++++++++++
+ reports/after/bandit_report.txt   | 27 +++++++++++++
+ reports/after/flake8_report.txt   |  0
+ reports/after/program_output.txt  |  5 +++
+ reports/after/pylint_report.txt   |  7 ++++
+ reports/before/bandit_report.txt  | 66 +++++++++++++++++++++++++++++++
+ reports/before/flake8_report.txt  |  4 ++
+ reports/before/program_output.txt |  5 +++
+ reports/before/pylint_report.txt  | 36 +++++++++++++++++
+ requirements.txt                  |  3 ++
+ vehicle_service.py                | 11 ++++--
+ 12 files changed, 198 insertions(+), 4 deletions(-)
+ create mode 100644 issues.md
+ create mode 100644 reports/after/bandit_report.txt
+ create mode 100644 reports/after/flake8_report.txt
+ create mode 100644 reports/after/program_output.txt
+ create mode 100644 reports/after/pylint_report.txt
+ create mode 100644 reports/before/bandit_report.txt
+ create mode 100644 reports/before/flake8_report.txt
+ create mode 100644 reports/before/program_output.txt
+ create mode 100644 reports/before/pylint_report.txt
+ create mode 100644 requirements.txt
+
+diff --git a/.gitignore b/.gitignore
+index e5fde14..726cf20 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -7,3 +7,8 @@ venv/
+ .venv/
+ env/
+ 
++# Program output
++services.json
++
++# Local backups
++*.orig
+diff --git a/issues.md b/issues.md
+new file mode 100644
+index 0000000..1b66c1c
+--- /dev/null
++++ b/issues.md
+@@ -0,0 +1,33 @@
++# Lab 5: Issues Found and Fixed
++
++Student: Samarth Mohan | SRN: PES1UG24CS703
++File: `vehicle_service.py`, the vehicle service desk for a garage.
++
++I ran Pylint, Bandit and Flake8 on the file as it came from the repo and saved the
++output in `reports/before/`. Then I fixed the findings and saved the new output in
++`reports/after/`. The line numbers in the table are from the original file, before
++my edits.
++
++## Issue table
++
++| Issue | Type | Line(s) | Description | Fix Approach |
++|---|---|---|---|---|
++| Weak MD5 hash (B324) | Security, High | 39 | `hashlib.md5()` makes the job card id, MD5 is not safe for security use | Added `usedforsecurity=False`, the id is only a short label and not a password hash |
++| Shell call (B602) | Security, High | 61 | `subprocess.call("cp services.json " + folder, shell=True)` runs a shell string built from `folder` | Replaced with `shutil.copy("services.json", folder)`, no shell and no string join |
++| Mutable default arg (W0102) | Bug | 12 | `history=[]` is built once and shared by every call to the function | Default is `None` now and a fresh list is made inside the function |
++| Broad exception (W0718) | Bug | 23 | `except Exception` catches everything, so a real error would be hidden | Changed to `except KeyError`, that is the only error the code expects there |
++| Hardcoded password (B105) | Security, Low | 8 | `ADMIN_PASSWORD = "garage-demo"` keeps a secret in the source file | Reads it from `GARAGE_ADMIN_PASSWORD` with `os.environ.get()` |
++| Unused risky import (B404) | Security, Low | 3 | `import subprocess` was only used by the shell call above | Removed, `shutil` does the copy |
++| Missing encoding (W1514) | Bug | 50, 55 | `open()` without encoding uses the machine locale, which breaks on other machines | Added `encoding="utf-8"` to both calls |
++| camelCase names (C0103) | Style | 12 to 59 | 18 names like `addService`, `vehicleNo` and `totalCost` do not follow the naming style | Renamed to snake_case and updated every call in `main()` |
++| Missing docstrings (C0114, C0116) | Style | 1, 12 to 64 | No module docstring and none of the nine functions had one | Added the module docstring and a docstring to the seven functions the demo uses |
++| Two docstrings left as is (C0116) | Style | 60, 65 | `backupRecords()` and `main()` still have no docstring | Not fixed. Both are short and I documented the functions the program uses. Pylint still shows these two messages and the score is 9.68/10 |
++| Long lines (E501) | Style | 49, 77 | The `print` call and the md5 return were over the 79 character limit | Split both over two lines |
++| Missing whitespace (E231, E225) | Style | 7, 43 | `2500,"Brake Check"` and `best=None` | Added the missing spaces |
++| Blank lines (E302) | Style | 49 | Only one blank line above `saveRecords` | Put two blank lines before it |
++
++## After the fixes
++
++Pylint went from 4.66/10 to 9.68/10. Bandit went from 4 issues to 0. Flake8 went
++from 4 issues to 0. The program still prints the same five lines, and the job card
++id for KA01AB1234 is still `353ee89f`.
+diff --git a/reports/after/bandit_report.txt b/reports/after/bandit_report.txt
+new file mode 100644
+index 0000000..8fd50b6
+--- /dev/null
++++ b/reports/after/bandit_report.txt
+@@ -0,0 +1,27 @@
++[main]	INFO	profile include tests: None
++[main]	INFO	profile exclude tests: None
++[main]	INFO	cli include tests: None
++[main]	INFO	cli exclude tests: None
++[main]	INFO	running on Python 3.12.1
++Run started:2026-10-14 03:10:52.155215+00:00
++
++Test results:
++	No issues identified.
++
++Code scanned:
++	Total lines of code: 72
++	Total lines skipped (#nosec): 0
++	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
++
++Run metrics:
++	Total issues (by severity):
++		Undefined: 0
++		Low: 0
++		Medium: 0
++		High: 0
++	Total issues (by confidence):
++		Undefined: 0
++		Low: 0
++		Medium: 0
++		High: 0
++Files skipped (0):
+diff --git a/reports/after/flake8_report.txt b/reports/after/flake8_report.txt
+new file mode 100644
+index 0000000..e69de29
+diff --git a/reports/after/program_output.txt b/reports/after/program_output.txt
+new file mode 100644
+index 0000000..fd763e1
+--- /dev/null
++++ b/reports/after/program_output.txt
+@@ -0,0 +1,5 @@
++No records for KA09ZZ0001
++Total for KA01AB1234: 2300
++Total for KA05XY9876: 2500
++Job card for KA01AB1234: 353ee89f
++Vehicles on file: 3 | busiest vehicle: KA01AB1234
+diff --git a/reports/after/pylint_report.txt b/reports/after/pylint_report.txt
+new file mode 100644
+index 0000000..8cb76b7
+--- /dev/null
++++ b/reports/after/pylint_report.txt
+@@ -0,0 +1,7 @@
++************* Module vehicle_service
++vehicle_service.py:73:0: C0116: Missing function or method docstring (missing-function-docstring)
++vehicle_service.py:78:0: C0116: Missing function or method docstring (missing-function-docstring)
++
++------------------------------------------------------------------
++Your code has been rated at 9.68/10 (previous run: 4.66/10, +5.02)
++
+diff --git a/reports/before/bandit_report.txt b/reports/before/bandit_report.txt
+new file mode 100644
+index 0000000..e45817d
+--- /dev/null
++++ b/reports/before/bandit_report.txt
+@@ -0,0 +1,66 @@
++[main]	INFO	profile include tests: None
++[main]	INFO	profile exclude tests: None
++[main]	INFO	cli include tests: None
++[main]	INFO	cli exclude tests: None
++[main]	INFO	running on Python 3.12.1
++Run started:2026-10-14 03:08:56.924685+00:00
++
++Test results:
++>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
++   Severity: Low   Confidence: High
++   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
++   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess
++   Location: ./vehicle_service.py:3:0
++2	import json
++3	import subprocess
++4	from datetime import date
++
++--------------------------------------------------
++>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'garage-demo'
++   Severity: Low   Confidence: Medium
++   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
++   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html
++   Location: ./vehicle_service.py:8:17
++7	                 "General": 2500,"Brake Check": 1200}
++8	ADMIN_PASSWORD = "garage-demo"
++9	service_records = {}
++
++--------------------------------------------------
++>> Issue: [B324:hashlib] Use of weak MD5 hash for security. Consider usedforsecurity=False
++   Severity: High   Confidence: High
++   CWE: CWE-327 (https://cwe.mitre.org/data/definitions/327.html)
++   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b324_hashlib.html
++   Location: ./vehicle_service.py:39:11
++38	def jobCardId(vehicleNo):
++39	    return hashlib.md5(vehicleNo.encode()).hexdigest()[:8]
++40	
++
++--------------------------------------------------
++>> Issue: [B602:subprocess_popen_with_shell_equals_true] subprocess call with shell=True identified, security issue.
++   Severity: High   Confidence: High
++   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
++   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b602_subprocess_popen_with_shell_equals_true.html
++   Location: ./vehicle_service.py:61:4
++60	    # Helper kept for the lab: not called by the demo
++61	    subprocess.call("cp services.json " + folder, shell=True)
++62	
++
++--------------------------------------------------
++
++Code scanned:
++	Total lines of code: 59
++	Total lines skipped (#nosec): 0
++	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
++
++Run metrics:
++	Total issues (by severity):
++		Undefined: 0
++		Low: 2
++		Medium: 0
++		High: 2
++	Total issues (by confidence):
++		Undefined: 0
++		Low: 0
++		Medium: 1
++		High: 3
++Files skipped (0):
+diff --git a/reports/before/flake8_report.txt b/reports/before/flake8_report.txt
+new file mode 100644
+index 0000000..e57b60f
+--- /dev/null
++++ b/reports/before/flake8_report.txt
+@@ -0,0 +1,4 @@
++vehicle_service.py:7:33: E231 missing whitespace after ','
++vehicle_service.py:43:9: E225 missing whitespace around operator
++vehicle_service.py:49:1: E302 expected 2 blank lines, found 1
++vehicle_service.py:77:80: E501 line too long (83 > 79 characters)
+diff --git a/reports/before/program_output.txt b/reports/before/program_output.txt
+new file mode 100644
+index 0000000..fd763e1
+--- /dev/null
++++ b/reports/before/program_output.txt
+@@ -0,0 +1,5 @@
++No records for KA09ZZ0001
++Total for KA01AB1234: 2300
++Total for KA05XY9876: 2500
++Job card for KA01AB1234: 353ee89f
++Vehicles on file: 3 | busiest vehicle: KA01AB1234
+diff --git a/reports/before/pylint_report.txt b/reports/before/pylint_report.txt
+new file mode 100644
+index 0000000..573b965
+--- /dev/null
++++ b/reports/before/pylint_report.txt
+@@ -0,0 +1,36 @@
++************* Module vehicle_service
++vehicle_service.py:1:0: C0114: Missing module docstring (missing-module-docstring)
++vehicle_service.py:12:0: C0116: Missing function or method docstring (missing-function-docstring)
++vehicle_service.py:12:0: C0103: Function name "addService" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:12:15: C0103: Argument name "vehicleNo" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:12:26: C0103: Argument name "serviceType" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:12:0: W0102: Dangerous default value [] as argument (dangerous-default-value)
++vehicle_service.py:20:0: C0116: Missing function or method docstring (missing-function-docstring)
++vehicle_service.py:20:0: C0103: Function name "cancelService" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:20:18: C0103: Argument name "vehicleNo" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:20:29: C0103: Argument name "serviceType" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:23:11: W0718: Catching too general exception Exception (broad-exception-caught)
++vehicle_service.py:31:0: C0116: Missing function or method docstring (missing-function-docstring)
++vehicle_service.py:31:0: C0103: Function name "getTotalCost" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:31:17: C0103: Argument name "vehicleNo" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:32:4: C0103: Variable name "totalCost" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:34:8: C0103: Variable name "totalCost" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:38:0: C0116: Missing function or method docstring (missing-function-docstring)
++vehicle_service.py:38:0: C0103: Function name "jobCardId" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:38:14: C0103: Argument name "vehicleNo" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:42:0: C0116: Missing function or method docstring (missing-function-docstring)
++vehicle_service.py:42:0: C0103: Function name "busiestVehicle" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:49:0: C0116: Missing function or method docstring (missing-function-docstring)
++vehicle_service.py:49:0: C0103: Function name "saveRecords" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:49:16: C0103: Argument name "fileName" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:50:9: W1514: Using open without explicitly specifying an encoding (unspecified-encoding)
++vehicle_service.py:54:0: C0116: Missing function or method docstring (missing-function-docstring)
++vehicle_service.py:54:0: C0103: Function name "loadRecords" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:54:16: C0103: Argument name "fileName" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:59:0: C0116: Missing function or method docstring (missing-function-docstring)
++vehicle_service.py:59:0: C0103: Function name "backupRecords" doesn't conform to snake_case naming style (invalid-name)
++vehicle_service.py:64:0: C0116: Missing function or method docstring (missing-function-docstring)
++
++-----------------------------------
++Your code has been rated at 4.66/10
++
+diff --git a/requirements.txt b/requirements.txt
+new file mode 100644
+index 0000000..e62c0f3
+--- /dev/null
++++ b/requirements.txt
+@@ -0,0 +1,3 @@
++pylint==4.1.3
++bandit==1.9.4
++flake8==7.4.1
+diff --git a/vehicle_service.py b/vehicle_service.py
+index deae5a4..212d2b8 100644
+--- a/vehicle_service.py
++++ b/vehicle_service.py
+@@ -7,7 +7,7 @@ import shutil
+ from datetime import date
+ 
+ SERVICE_RATES = {"Oil Change": 1500, "Wheel Alignment": 800,
+-                 "General": 2500,"Brake Check": 1200}
++                 "General": 2500, "Brake Check": 1200}
+ ADMIN_PASSWORD = os.environ.get("GARAGE_ADMIN_PASSWORD")
+ service_records = {}
+ 
+@@ -45,17 +45,19 @@ def get_total_cost(vehicle_no):
+ 
+ def job_card_id(vehicle_no):
+     """Return a short job card id for a vehicle."""
+-    return hashlib.md5(vehicle_no.encode(), usedforsecurity=False).hexdigest()[:8]
++    digest = hashlib.md5(vehicle_no.encode(), usedforsecurity=False)
++    return digest.hexdigest()[:8]
+ 
+ 
+ def busiest_vehicle():
+     """Return the vehicle with the most jobs on file."""
+-    best=None
++    best = None
+     for vehicle, jobs in service_records.items():
+         if best is None or len(jobs) > len(service_records[best]):
+             best = vehicle
+     return best
+ 
++
+ def save_records(file_name="services.json"):
+     """Write all service records to a json file."""
+     with open(file_name, "w", encoding="utf-8") as f:
+@@ -86,7 +88,8 @@ def main():
+     print("Job card for KA01AB1234:", job_card_id("KA01AB1234"))
+     save_records()
+     loaded = load_records()
+-    print("Vehicles on file:", len(loaded), "| busiest vehicle:", busiest_vehicle())
++    print("Vehicles on file:", len(loaded),
++          "| busiest vehicle:", busiest_vehicle())
+ 
+ 
+ main()
+-- 
+2.55.0
+
